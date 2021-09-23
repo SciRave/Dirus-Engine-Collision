@@ -29,3 +29,7 @@ Collision:Add(Once.apply(Part)) --Add to the manager.
 Collision:Start() --Connects the manager to the heartbeat event. Roblox event connections are ordered in aescending order. 
 --So if you want certain groups of hitboxes to hit first, you can call :Start() methods from lowest to highest priority.
 ```
+
+## Installation
+
+The latest release always carries a pre-made rbxm file.
