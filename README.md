@@ -4,31 +4,82 @@ A top-level collision manager object. Originally bundled into the Dirus Framewor
 
 ## Usage
 
-Usage of the Collision object is fairly simple. Documentation for each module is located at the top in comments.
+Usage of the Collision object is fairly simple. Documentation for each module is located at the top in comments. An example script is listed at the end of the Collision module.
+
+### Creating the object
+
+All the default hitbox implementations require the Collision object to be supplied with an OverlapParams object.
 
 ```lua
-local Overlap = OverlapParams.new()
-local Player = game.Players:FindFirstChildOfClass("Player") or game.Players.PlayerAdded:Wait()
-local Character = Player.Character or Player.CharacterAdded:Wait()
-Overlap.FilterDescendantsInstances = Character:GetChildren()
-Overlap.FilterType = Enum.RaycastFilterType.Whitelist
-Overlap.MaxParts = 0 --Actually makes the max math.huge
+local Collision = require(PathToCollision.Collision.Collision)
 
-local Collision = require(game.ReplicatedStorage.Collision.Collision).new(Overlap) --Top-level Collision manager
-
-local PartCast = require(game.ReplicatedStorage.Collision.Collidables.Part) --Part-based hitbox object
-
-local Part = PartCast.new(function(tab)
-  print(unpack(tab)) --Prints all resultant parts when a hit registers
-end, workspace.Part) --Initiation. The function is what is ran when the hitbox detects something. It checks every heartbeat.
-
-local Once = require(game.ReplicatedStorage.Collision.Wrappers.Once) --A wrapper. This one makes registered hits for parts only happen once per part.
-
-Collision:Add(Once.apply(Part)) --Add to the manager.
-
-Collision:Start() --Connects the manager to the heartbeat event. Roblox event connections are ordered in aescending order. 
---So if you want certain groups of hitboxes to hit first, you can call :Start() methods from lowest to highest priority.
+local CollisionObject = Collision.new(OverlapParamsOfChoice)
 ```
+
+### Creating a hitbox
+
+For an object to be a 'Collidable', it must have a Detect method. The default inherented Detect method also requires a Calculate method. All the default implementations of Collidable need a function to run when the hitbox detects something.
+
+Keep in mind that the function will by default not be called if the detection yields no results (table has no values!).
+
+```lua
+local PartHitbox = require(PathToCollision.Collision.Collidables.Part) -- Part hitbox implementation
+
+-- Note: Function won't be called if the table was empty!
+function hitboxDetectedThings(Parts: {BasePart})
+    print(unpack(Parts)) -- Prints parts detected that frame
+end
+
+local Hitbox = PartHitbox.new(hitboxDetectedThings, PartOfChoice) -- Creates part hitbox
+
+Collision:Add(Hitbox) -- Adds it to the Collision object
+
+-- Additionally you can also do:
+
+Hitbox:Detect(OverlapParamsOfChoice)
+
+-- to force a detection outside of the Collision object
+
+Collision:Remove(Hitbox) -- Removes it from the Collision object
+```
+
+### Running hitboxes
+
+The Collision object does not automatically check it's hitboxes upon creation. You have several options in order to get it to check them.
+
+```lua
+Collision:Check() -- Iterates through it's list of hitboxes and calls the Detect method 
+
+Collision:Start() -- Connects the Check method to a RunService event so it runs it every frame
+
+Collision:Stop() -- If there is a registered connection to an event, it disconnects and discards the connection
+```
+Due to how roblox event ordering works, the first Collision object that calls Start will be the last to run it's hitboxes.
+
+The default hitbox implementations will return what they contain every frame.
+
+### Wrappers
+
+Wrappers modify the functionality of Collidables. They can be stacked on to each other. 
+
+Note that the order in which wrappers are applied may affect their functionality.
+
+```lua
+local UpdateWrapper = require(PathToCollision.Collision.Wrappers.Update) -- A wrapper that is supplied with a function 
+-- The function runs before the Calculate method logic
+
+function onUpdated()
+    print("Hitbox ran!") -- Prints before the hitbox runs
+end
+
+local NewCollisionWrapper = require(PathToCollision.Collision.Wrappers.NewCollision) -- A wrapper that reduces the detected collisions to new ones
+-- Behaves similarly to the .Touched event
+
+local WrappedCollidable = UpdateWrapper.apply(NewCollisionWrapper.apply(Collidable), onUpdated) -- The result is a double-wrapped collidable!
+-- When added to a Collision object, this wrapped collidable will run onUpdated before calculating and only detect new collisions!
+
+```
+Documentation for each wrapper is at it's module's head in comments.
 
 ## Installation
 
