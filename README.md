@@ -1,4 +1,4 @@
-# Collision
+# Dirus Framework: Collision
 
 A top-level collision manager object. Originally bundled into the Dirus Framework.
 
