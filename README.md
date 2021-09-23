@@ -1,14 +1,31 @@
-# RSA Lua Template
+# Collision
 
-This is a template for creating a Lua project for RSA Open Source. The included files provide a README, a license, and a basic project structure which you are welcome to change if you'd like. 
+A top-level collision manager object. Originally bundled into the Dirus Framework.
 
-We choose the [MIT license](https://choosealicense.com/licenses/mit/) by default since it's simple and permissive, but you are also welcome to change it if you want so long as it isn't a restrictive one. When using this template, be sure to fill in the [year] and [fullname] fields with the correct information.
+## Usage
 
-For information on how to write a README, please see [this guide](https://guides.github.com/pdfs/markdown-cheatsheet-online.pdf) on Github-flavored markdown.
+Usage of the Collision object is fairly simple. Documentation for each module is located at the top in comments.
 
-ℹ️ If you're using VSCode, you may use the following extensions to make your development experience easier:
+```lua
+local Overlap = OverlapParams.new()
+local Player = game.Players:FindFirstChildOfClass("Player") or game.Players.PlayerAdded:Wait()
+local Character = Player.Character or Player.CharacterAdded:Wait()
+Overlap.FilterDescendantsInstances = Character:GetChildren()
+Overlap.FilterType = Enum.RaycastFilterType.Whitelist
+Overlap.MaxParts = 0 --Actually makes the max math.huge
 
-* [VSCode Rojo](https://marketplace.visualstudio.com/items?itemName=evaera.vscode-rojo) - An extension which allows you to use an external editor such as VSCode to write code for your Roblox game
-* [Roblox LSP](https://marketplace.visualstudio.com/items?itemName=Nightrains.robloxlsp) - A language server (Intellisense, code formatting, etc.) for Roblox Luau
-* [Roblox TS](https://marketplace.visualstudio.com/items?itemName=roblox-ts.vscode-roblox-ts) - A language server for Roblox Typescript
-* [EditorConfig](https://marketplace.visualstudio.com/items?itemName=EditorConfig.EditorConfig) - An extension which automatically formats your files
+local Collision = require(game.ReplicatedStorage.Collision.Collision).new(Overlap) --Top-level Collision manager
+
+local PartCast = require(game.ReplicatedStorage.Collision.Collidables.Part) --Part-based hitbox object
+
+local Part = PartCast.new(function(tab)
+  print(unpack(tab)) --Prints all resultant parts when a hit registers
+end, workspace.Part) --Initiation. The function is what is ran when the hitbox detects something. It checks every heartbeat.
+
+local Once = require(game.ReplicatedStorage.Collision.Wrappers.Once) --A wrapper. This one makes registered hits for parts only happen once per part.
+
+Collision:Add(Once.apply(Part)) --Add to the manager.
+
+Collision:Start() --Connects the manager to the heartbeat event. Roblox event connections are ordered in aescending order. 
+--So if you want certain groups of hitboxes to hit first, you can call :Start() methods from lowest to highest priority.
+```
