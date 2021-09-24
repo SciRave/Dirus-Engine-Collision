@@ -41,7 +41,7 @@ function Collidable:Detect(overlap: OverlapParams)
 	local Detected = self:Calculate(overlap)
 	
 	if #Detected > 0 then
-		task.defer(self.onDetection, Detected)
+		task.spawn(self.onDetection, Detected)
 	end
 	
 end
