@@ -2,6 +2,24 @@
 
 A top-level collision manager object. Originally bundled into the Dirus Framework.
 
+## Practical advantages
+
+* Extensibility of the Collidable and Wrapper objects help unify redundant collision-related code
+
+* Assortment of default Collidable and Wrapper implementations saves time
+
+* Seperation of the core methods between objects allow flexibility in use
+
+* Wrappers and the ability to create seperate Collision objects let the user easily create more complex hitbox interactions and functionality
+
+## Use cases
+
+* Fighting games, espeically ones with a diverse set of moves that have different shapes and interactions
+
+* Boss battles with dynamic and unique attacks
+
+* Parkours and obbies that involve hazards, especially moving ones and ones that change shape or state
+
 ## Usage
 
 Usage of the Collision object is fairly simple. Documentation for each module is located at the top in comments. An example script is listed at the end of the Collision module.
